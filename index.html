@@ -9,19 +9,19 @@
 html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:system-ui,-apple-system,sans-serif;}
 #app{position:relative;width:100%;max-width:450px;margin:0 auto;height:100vh;overflow:hidden;background:#060610;}
 #three-canvas{position:absolute;inset:0;width:100%!important;height:100%!important;z-index:1;}
-#cam-pip{position:absolute;bottom:100px;right:40px;width:160px;height:120px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.15);z-index:20;background:#000;}
+#cam-pip{position:absolute;bottom:150px;right:40px;width:160px;height:120px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.15);z-index:20;background:#000;}
 #webcam{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block;}
 #lm-canvas{position:absolute;inset:0;width:100%;height:100%;}
-#hud-top{position:absolute;top:0;left:0;right:0;z-index:20;padding:88px 18px 0;}
+#hud-top{position:absolute;top:0;left:0;right:0;z-index:20;padding:180px 18px 0;}
 #hud-logo-row{display:flex;align-items:center;gap:10px;}
-#hud-logo{height:26px;width:auto;filter:drop-shadow(0 1px 4px rgba(0,0,0,.5));}
-#hud-title{font-size:13px;font-weight:600;letter-spacing:.1em;color:rgba(255,255,255,.85);}
-#hud-sub{font-size:10px;color:rgba(255,255,255,.35);margin-top:1px;}
-#hand-badges{position:absolute;top:165px;left:0;right:0;z-index:20;display:flex;justify-content:space-between;padding:0 12px;pointer-events:none;}
+#hud-logo{height:38px;width:auto;filter:drop-shadow(0 1px 4px rgba(0,0,0,.5));}
+#hud-title{font-size:20px;font-weight:700;letter-spacing:.06em;color:rgba(255,255,255,.95);}
+#hud-sub{font-size:14px;color:rgba(255,255,255,.5);margin-top:3px;}
+#hand-badges{position:absolute;top:250px;left:0;right:0;z-index:20;display:flex;justify-content:space-between;padding:0 12px;pointer-events:none;}
 .hbadge{font-size:10px;padding:4px 10px;border-radius:16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);transition:all .25s;white-space:nowrap;}
 .hbadge.aex{background:rgba(127,119,221,.25);border-color:rgba(127,119,221,.6);color:#c5bfff;}
 .hbadge.aro{background:rgba(29,158,117,.25);border-color:rgba(29,158,117,.6);color:#7fe8c3;}
-#ring-wrap{position:absolute;bottom:106px;left:40px;z-index:20;display:flex;flex-direction:column;align-items:center;gap:4px;}
+#ring-wrap{position:absolute;bottom:150px;left:40px;z-index:20;display:flex;flex-direction:column;align-items:center;gap:4px;}
 #progress-ring{width:48px;height:48px;}
 #ring-label{font-size:9px;color:rgba(255,255,255,.35);}
 #loading-overlay{position:absolute;inset:0;z-index:100;background:#060610;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
@@ -50,8 +50,8 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:sys
     </div>
   </div>
   <div id="hand-badges">
-    <div class="hbadge" id="badge-left">오른손 감지 중...</div>
     <div class="hbadge" id="badge-right">왼손 감지 중...</div>
+    <div class="hbadge" id="badge-left">오른손 감지 중...</div>
   </div>
   <div id="ring-wrap">
     <svg id="progress-ring" viewBox="0 0 48 48">
@@ -62,6 +62,15 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:sys
     </svg>
     <div id="ring-label">분해</div>
   </div>
+  <!-- Info card overlay -->
+  <div id="info-card" style="display:none;position:absolute;right:16px;top:50%;transform:translateY(-50%);z-index:30;width:175px;pointer-events:none;">
+    <div id="info-card-inner" style="background:rgba(6,6,20,0.92);border-radius:12px;padding:14px 16px;border:1.5px solid #fff;transition:border-color 0.3s;">
+      <div id="info-card-name" style="font-size:12px;font-weight:700;color:#fff;margin-bottom:6px;line-height:1.3;"></div>
+      <div id="info-card-desc" style="font-size:10px;color:rgba(255,255,255,0.65);line-height:1.6;"></div>
+    </div>
+  </div>
+  <!-- Connector line canvas -->
+  <canvas id="connector-canvas" style="position:absolute;inset:0;width:100%;height:100%;z-index:25;pointer-events:none;"></canvas>
   <div id="loading-overlay"><div class="spinner"></div><p id="load-txt">로딩 중...</p></div>
   <div id="err"><h2>카메라 오류</h2><p id="err-detail">카메라 권한을 허용하고 HTTPS 또는 localhost에서 실행해주세요.</p></div>
   <div id="file-warn">
@@ -1422,21 +1431,8 @@ function makeLabel(ld){
 }
 
 function buildLabels(){
-  LAYERS.forEach((ld,i)=>{
-    if(ld.desc&&ld.desc.length>0){
-      const sp=makeLabel(ld);sp.position.set(1.9,ld.baseY,1.5);window._pivot.add(sp);labelSprites.push(sp);
-    } else {
-      labelSprites.push(null);
-    }
-  });
-  // Extra info labels: TSV, MR-MUF, DRAM thickness
-  [{name:'TSV (Through-Silicon Via)',desc:['구리 기둥 · 직경 5μm','10,000개+ 수직 관통','신호 지연 < 1ns'],color:0xd0c8ff,y:.12},
-   {name:'MR-MUF 에폭시 레진',desc:['Mass Reflow Molded Underfill','플립칩+몰드 동시 공정','방열 40% 향상'],color:0xd4820a,y:-.12},
-   {name:'DRAM Die 두께',desc:['다이 두께 < 30μm','머리카락 1/3 수준','극박 그라인딩 공정'],color:0x7b72d9,y:-.35},
-  ].forEach(el=>{
-    const sp=makeLabel(el);sp.position.set(1.9,el.y,1.5);sp.userData={isExtra:true};
-    window._pivot.add(sp);labelSprites.push(sp);
-  });
+  // Labels are now handled as 2D HTML overlay — no 3D sprites needed
+  labelSprites.length = 0;
 }
 
 function animLoop(){
@@ -1463,19 +1459,8 @@ function animLoop(){
     m.position.y=(layerGroups[i].position.y+layerGroups[i+1].position.y)/2;
     m.material.opacity=Math.max(0,.82-explodeP*1.5);
   });
-  // Fixed evenly-spaced label positions (ignore layer Y)
-  {
-    const _active = labelSprites.filter(sp=>sp!=null);
-    const _total = _active.length;
-    const _topY = 3.8, _botY = -3.8;
-    const _step = _total > 1 ? (_topY - _botY) / (_total - 1) : 0;
-    _active.forEach((sp, k) => {
-      const targetY = _topY - k * _step;
-      sp.position.y += (targetY - sp.position.y) * 0.08;
-      const tgt = explodeP > .18 ? Math.min(1, (explodeP - .18) * 2.8) : 0;
-      sp.material.opacity += (tgt - sp.material.opacity) * .1;
-    });
-  }
+  // 2D label overlay update
+  updateInfoCard();
   const anyRot=Math.abs(rotDeltaY)>.0001||Math.abs(rotDeltaX)>.0001||Math.abs(rotDeltaZ)>.0001;
   if(anyRot){
     controls.autoRotate=false;
@@ -1621,11 +1606,151 @@ async function initMP(){
   requestAnimationFrame(detect);
 }
 
+// Label definitions ordered by explodeP threshold
+// Labels shown one at a time, cycling each time explodeP crosses 0.4
+// Order: bottom-up (Interposer first, DRAM last)
+const INFO_LABELS = [
+  {name:'Interposer',     desc:['HBM ↔ GPU 초고속 연결','수천 개 신호를 초단거리 전송'],                        color:'#d4820a', targetGroup:17},
+  {name:'Base Die',       desc:['DRAM 스택 전체의 데이터 통신·메모리 제어 담당','전력 및 신호 관리 수행'],          color:'#1d9e75', targetGroup:16},
+  {name:'TSV',            desc:['실리콘을 관통하는 수직 배선','고속·고집적 적층 구현'],                           color:'#d0c8ff', targetGroup:4},
+  {name:'MR-MUF',         desc:['Mass Reflow Molded Underfill','적층 안정성 및 방열 성능 향상'],                 color:'#f0a030', targetGroup:8},
+  {name:'DRAM Die',       desc:['4단~16단 적층','두께 30μm 수준 (머리카락 약 1/3)'],                            color:'#8880e8', targetGroup:0},
+];
+
+let _labelCycleIdx = 0;
+let _wasAboveThresh = false;
+let _activeLabelIdx = -1;
+let _cardSpriteMap = {}; // map label idx → sprite
+
+function _wrapText(ctx, text, x, y, maxW, lineH){
+  const words = text.split(' ');
+  let line = '';
+  let curY = y;
+  for(let n=0;n<words.length;n++){
+    const test = line + words[n] + ' ';
+    if(ctx.measureText(test).width > maxW && n > 0){
+      ctx.fillText(line.trim(), x, curY);
+      line = words[n] + ' ';
+      curY += lineH;
+    } else { line = test; }
+  }
+  ctx.fillText(line.trim(), x, curY);
+  return curY + lineH;
+}
+
+function _makeCardSprite(lb){
+  // First pass: measure needed height
+  const W=560;
+  const PAD=24, TITLE_SIZE=46, DESC_SIZE=36, LINE_H=46, TITLE_H=64;
+  const tmpC=document.createElement('canvas'); tmpC.width=W;
+  const tmpCtx=tmpC.getContext('2d');
+  tmpCtx.font=DESC_SIZE+'px system-ui,Arial,sans-serif';
+  let totalDescH=0;
+  lb.desc.forEach(line=>{
+    const words=line.split(' '); let l=''; let lines=1;
+    words.forEach((w,n)=>{
+      const t=l+w+' ';
+      if(tmpCtx.measureText(t).width>W-PAD*2&&n>0){l=w+' ';lines++;}else{l=t;}
+    });
+    totalDescH+=lines*LINE_H;
+  });
+  const H=Math.max(180, PAD+TITLE_H+totalDescH+PAD);
+
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='rgba(6,6,20,0.95)';
+  roundRect(ctx,0,0,W,H,16); ctx.fill();
+  ctx.strokeStyle=lb.color; ctx.lineWidth=3;
+  roundRect(ctx,0,0,W,H,16); ctx.stroke();
+
+  // Title
+  ctx.fillStyle=lb.color;
+  ctx.font='bold '+TITLE_SIZE+'px system-ui,Arial,sans-serif';
+  ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillText(lb.name, PAD, PAD);
+
+  // Desc with word wrap
+  ctx.fillStyle='rgba(255,255,255,0.88)';
+  ctx.font=DESC_SIZE+'px system-ui,Arial,sans-serif';
+  let curY=PAD+TITLE_H;
+  lb.desc.forEach(line=>{
+    curY=_wrapText(ctx,line,PAD,curY,W-PAD*2,LINE_H);
+  });
+
+  const tex=new THREE.CanvasTexture(c);
+  tex.needsUpdate=true;
+  const mat=new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false,depthWrite:false});
+  const sp=new THREE.Sprite(mat);
+  sp.scale.set(2.6, H/W*2.6, 1);
+  sp.visible=false;
+  window._pivot.add(sp);
+  return sp;
+}
+
+function _buildCardSprites(){
+  INFO_LABELS.forEach((lb,i)=>{
+    _cardSpriteMap[i]=_makeCardSprite(lb);
+  });
+}
+
+function _updateLabelCycle(){
+  const above = explodeP > 0.30;
+  if(above && !_wasAboveThresh){
+    _activeLabelIdx = _labelCycleIdx;
+    _labelCycleIdx = (_labelCycleIdx+1) % INFO_LABELS.length;
+  }
+  if(!above) _activeLabelIdx = -1;
+  _wasAboveThresh = above;
+}
+
+function updateInfoCard(){
+  _updateLabelCycle();
+
+  // Hide all cards first
+  INFO_LABELS.forEach((_,i)=>{ if(_cardSpriteMap[i]) _cardSpriteMap[i].visible=false; });
+
+  // Hide 2D overlay
+  const card = document.getElementById('info-card');
+  const connCanvas = document.getElementById('connector-canvas');
+  if(connCanvas){ connCanvas.getContext('2d').clearRect(0,0,connCanvas.width,connCanvas.height); }
+  if(card) card.style.display='none';
+
+  if(_activeLabelIdx < 0) return;
+
+  const lb = INFO_LABELS[_activeLabelIdx];
+  const sp = _cardSpriteMap[_activeLabelIdx];
+  if(!sp) return;
+
+  const tg = layerGroups[lb.targetGroup];
+  if(!tg) return;
+
+  // Get target layer world position (including pivot transform)
+  const worldPos = new THREE.Vector3();
+  tg.getWorldPosition(worldPos);
+  // Apply pivot rotation/position
+  worldPos.applyMatrix4(window._pivot.matrixWorld);
+
+  // Project to NDC to know where on screen the layer is
+  const proj = worldPos.clone().project(camera);
+  // Clamp NDC so card stays inside [-0.75, 0.75] x [-0.75, 0.75]
+  // Place card to the right of the layer but clamped
+  let cx = Math.min(0.75, proj.x + 0.45);
+  let cy = Math.max(-0.7, Math.min(0.7, proj.y));
+  // If layer is already on right half, put card on left
+  if(proj.x > 0.3) cx = Math.max(-0.75, proj.x - 0.9);
+  // Unproject back to world space at same depth
+  const cardNDC = new THREE.Vector3(cx, cy, proj.z);
+  const cardWorld = cardNDC.unproject(camera);
+  sp.position.copy(cardWorld);
+  sp.visible = true;
+}
+
 async function main(){
   await loadLogoTexture();
   await loadHBMTopTexture();
   initThree();
   buildLayers();buildTSV();buildMUF();buildFloor();buildLabels();
+  _buildCardSprites();
   animLoop();
   initMP().catch(e=>{
     document.getElementById('err-detail').textContent='오류: '+e.message;
