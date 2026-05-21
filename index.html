@@ -9,19 +9,19 @@
 html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:system-ui,-apple-system,sans-serif;}
 #app{position:relative;width:100%;max-width:450px;margin:0 auto;height:100vh;overflow:hidden;background:#060610;}
 #three-canvas{position:absolute;inset:0;width:100%!important;height:100%!important;z-index:1;}
-#cam-pip{position:absolute;bottom:150px;right:40px;width:160px;height:120px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.15);z-index:20;background:#000;}
+#cam-pip{position:absolute;bottom:80px;right:40px;width:160px;height:120px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.15);z-index:20;background:#000;}
 #webcam{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block;}
 #lm-canvas{position:absolute;inset:0;width:100%;height:100%;}
-#hud-top{position:absolute;top:0;left:0;right:0;z-index:20;padding:180px 18px 0;}
+#hud-top{position:absolute;top:0;left:0;right:0;z-index:20;padding:80px 18px 0;}
 #hud-logo-row{display:flex;align-items:center;gap:10px;}
 #hud-logo{height:38px;width:auto;filter:drop-shadow(0 1px 4px rgba(0,0,0,.5));}
 #hud-title{font-size:20px;font-weight:700;letter-spacing:.06em;color:rgba(255,255,255,.95);}
 #hud-sub{font-size:14px;color:rgba(255,255,255,.5);margin-top:3px;}
-#hand-badges{position:absolute;top:250px;left:0;right:0;z-index:20;display:flex;justify-content:space-between;padding:0 12px;pointer-events:none;}
+#hand-badges{position:absolute;top:150px;left:0;right:0;z-index:20;display:flex;justify-content:space-between;padding:0 12px;pointer-events:none;}
 .hbadge{font-size:10px;padding:4px 10px;border-radius:16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);transition:all .25s;white-space:nowrap;}
 .hbadge.aex{background:rgba(127,119,221,.25);border-color:rgba(127,119,221,.6);color:#c5bfff;}
 .hbadge.aro{background:rgba(29,158,117,.25);border-color:rgba(29,158,117,.6);color:#7fe8c3;}
-#ring-wrap{position:absolute;bottom:150px;left:40px;z-index:20;display:flex;flex-direction:column;align-items:center;gap:4px;}
+#ring-wrap{position:absolute;bottom:80px;left:40px;z-index:20;display:flex;flex-direction:column;align-items:center;gap:4px;}
 #progress-ring{width:48px;height:48px;}
 #ring-label{font-size:9px;color:rgba(255,255,255,.35);}
 #loading-overlay{position:absolute;inset:0;z-index:100;background:#060610;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
